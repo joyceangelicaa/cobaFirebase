@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     //inisialisasi variabel global untuk arraylist
     var DataProvinsi = ArrayList<daftarProvinsi>()
+//    lateinit var lvAdapter: ArrayAdapter<daftarProvinsi>
     lateinit var lvadapter: SimpleAdapter
 
     //inisialisasi variabel global untuk edittext provinsi dan ibukota
@@ -52,12 +53,16 @@ class MainActivity : AppCompatActivity() {
             data,
             android.R.layout.simple_list_item_2,
             arrayOf("Pro", "Ibu"),
-            intArrayOf(android.R.id.text1, android.R.id.text2)
+            intArrayOf(
+                android.R.id.text1, android.R.id.text2
+            )
         )
+        _lvData.adapter = lvadapter
 
         _btSimpan.setOnClickListener {
             tambahData(db, _etProvinsi.text.toString(), _etIbukota.text.toString())
         }
+        readData(db)
     }
 
     //function tambah data
@@ -69,6 +74,7 @@ class MainActivity : AppCompatActivity() {
                 _etProvinsi.setText("")
                 _etIbukota.setText("")
                 Log.d("Firebase", "Data berhasil disimpan")
+                readData(db)
             }
             .addOnFailureListener {
                 Log.d("Firebase", it.message.toString())
