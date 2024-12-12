@@ -21,14 +21,15 @@ class MainActivity : AppCompatActivity() {
 
     //inisialisasi variabel global untuk arraylist
     var DataProvinsi = ArrayList<daftarProvinsi>()
-//    lateinit var lvAdapter: ArrayAdapter<daftarProvinsi>
+
+    //    lateinit var lvAdapter: ArrayAdapter<daftarProvinsi>
     lateinit var lvadapter: SimpleAdapter
 
     //inisialisasi variabel global untuk edittext provinsi dan ibukota
     lateinit var _etProvinsi: EditText
     lateinit var _etIbukota: EditText
 
-    var data : MutableList<Map<String, String>> = ArrayList()
+    var data: MutableList<Map<String, String>> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,13 +64,34 @@ class MainActivity : AppCompatActivity() {
             tambahData(db, _etProvinsi.text.toString(), _etIbukota.text.toString())
         }
         readData(db)
+
+        _lvData.setOnItemLongClickListener { parent, view, position, id ->
+            val namaPro = data[position].get("Pro")
+            Log.d("Firebase", "Nama dokumen yang dihapus: $namaPro")
+            if (namaPro != null) {
+                db.collection("tbProvinsi")
+                    .document(namaPro)
+                    .delete()
+                    .addOnSuccessListener {
+                        Log.d("Firebase", "Data berhasil dihapus")
+                        readData(db)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("Firebase", e.message.toString())
+//                        Log.w("Firebase", "Gagal menghapus data: ${e.message}")
+                    }
+            }
+            true
+        }
     }
 
     //function tambah data
     fun tambahData(db: FirebaseFirestore, Provinsi: String, Ibukota: String) {
         val dataBaru = daftarProvinsi(Provinsi, Ibukota)
         db.collection("tbProvinsi")
-            .add(dataBaru)
+            .document(dataBaru.provinsi)
+            .set(dataBaru)
+//            .add(dataBaru)
             .addOnSuccessListener {
                 _etProvinsi.setText("")
                 _etIbukota.setText("")
@@ -84,8 +106,7 @@ class MainActivity : AppCompatActivity() {
     //menampilkan data
     fun readData(db: FirebaseFirestore) {
         db.collection("tbProvinsi").get()
-            .addOnSuccessListener {
-                result ->
+            .addOnSuccessListener { result ->
                 DataProvinsi.clear()
                 for (document in result) {
                     val readData = daftarProvinsi(
